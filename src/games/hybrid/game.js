@@ -77,42 +77,81 @@ function renderHybridCenter() {
   const deckEl = document.getElementById('deck-pile');
   const deckCountEl = document.getElementById('deck-count');
   const discardEl = document.getElementById('discard-area');
+  const humanIdx = getHumanIdx();
+  const isDrawPhase = G.phase === 'draw';
+  const isMyDrawTurn = isDrawPhase && G.currentPlayer === humanIdx;
 
   if (deckCountEl) deckCountEl.textContent = `${G.deck.length}枚`;
+
+  // --- 山札 ---
   if (deckEl) {
     deckEl.innerHTML = '';
-    deckEl.onclick = null;
+    deckEl.className = 'deck-pile';
+    if (isMyDrawTurn) {
+      deckEl.classList.add('source-selected');
+      deckEl.style.cursor = 'pointer';
+      deckEl.title = '山札から引く';
+      deckEl.onclick = () => hybridDrawDeck();
+    } else {
+      deckEl.style.cursor = '';
+      deckEl.title = '';
+      deckEl.onclick = null;
+    }
     if (G.deck.length > 0) {
       const back = document.createElement('div');
-      back.className = 'card card-back-inner';
       back.style.cssText = 'width:52px;height:74px;background:var(--felt);border:2px solid var(--gold);border-radius:6px;';
       deckEl.appendChild(back);
     } else {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'color:var(--text-light);font-size:11px;text-align:center;padding:4px;';
-      empty.textContent = '空';
-      deckEl.appendChild(empty);
+      deckEl.innerHTML = '<div style="color:var(--text-light);font-size:11px;text-align:center;padding:4px;">空</div>';
     }
   }
 
+  // --- 捨て札 / 場のカード ---
   if (discardEl) {
     discardEl.innerHTML = '';
-    if (G.fieldCards.length > 0) {
-      const targets = getFieldTargets(G.fieldCards);
-      const badge = document.createElement('div');
-      badge.className = 'field-value-badge';
-      badge.textContent = `目標: ${targets.join(' or ')}`;
-      discardEl.appendChild(badge);
-      G.fieldCards.forEach(c => {
-        const cd = renderCard(c);
-        cd.style.cssText = 'position:relative;display:inline-block;';
+
+    if (isDrawPhase) {
+      // ドロー時: 直前の捨て札トップを表示（クリックで引ける）
+      if (G.discardAll.length > 0) {
+        const topCard = G.discardAll[G.discardAll.length - 1];
+        const label = document.createElement('div');
+        label.className = 'deck-label';
+        label.style.cssText = 'font-size:10px;color:var(--text-light);margin-bottom:4px;';
+        label.textContent = '捨て札';
+        discardEl.appendChild(label);
+        const cd = renderCard(topCard);
+        cd.className += ' discard-top-card';
+        if (isMyDrawTurn) {
+          cd.classList.add('source-selected');
+          cd.style.cursor = 'pointer';
+          cd.onclick = () => hybridDrawDiscard();
+        }
         discardEl.appendChild(cd);
-      });
+      } else {
+        const ph = document.createElement('div');
+        ph.style.cssText = 'width:72px;height:104px;border:2px dashed rgba(255,255,255,0.15);border-radius:7px;display:flex;align-items:center;justify-content:center;';
+        ph.innerHTML = '<span style="color:var(--text-light);font-size:11px;">捨て札なし</span>';
+        discardEl.appendChild(ph);
+      }
     } else {
-      const ph = document.createElement('div');
-      ph.style.cssText = 'width:72px;height:104px;border:2px dashed rgba(255,255,255,0.15);border-radius:7px;display:flex;align-items:center;justify-content:center;';
-      ph.innerHTML = '<span style="color:var(--text-light);font-size:11px;">場なし</span>';
-      discardEl.appendChild(ph);
+      // 通常時: 場のカードと目標値を表示
+      if (G.fieldCards.length > 0) {
+        const targets = getFieldTargets(G.fieldCards);
+        const badge = document.createElement('div');
+        badge.className = 'field-value-badge';
+        badge.textContent = `目標: ${targets.join(' or ')}`;
+        discardEl.appendChild(badge);
+        G.fieldCards.forEach(c => {
+          const cd = renderCard(c);
+          cd.style.cssText = 'position:relative;display:inline-block;';
+          discardEl.appendChild(cd);
+        });
+      } else {
+        const ph = document.createElement('div');
+        ph.style.cssText = 'width:72px;height:104px;border:2px dashed rgba(255,255,255,0.15);border-radius:7px;display:flex;align-items:center;justify-content:center;';
+        ph.innerHTML = '<span style="color:var(--text-light);font-size:11px;">場なし</span>';
+        discardEl.appendChild(ph);
+      }
     }
   }
 }
@@ -163,11 +202,12 @@ function updateHybridActionBar() {
     actionBar.appendChild(dobonBtn);
 
   } else if (G.phase === 'draw') {
-    const isMyTurn = G.currentPlayer === humanIdx;
-    const canDrawDiscard = isMyTurn && G.discardAll.length > 0;
-
-    actionBar.appendChild(makeBtn('山札から引く', 'btn-action btn-discard', !isMyTurn, hybridDrawDeck));
-    actionBar.appendChild(makeBtn('捨て札から引く', 'btn-action btn-secondary', !canDrawDiscard, hybridDrawDiscard));
+    const info = document.createElement('div');
+    info.className = 'dobon-window-info';
+    info.textContent = G.currentPlayer === humanIdx
+      ? '⬆ 山札 または 捨て札をクリックして1枚引いてください'
+      : `${G.players[G.currentPlayer]?.name ?? ''} がカードを引いています...`;
+    actionBar.appendChild(info);
 
   } else {
     actionBar.appendChild(makeBtn('YANIV宣言', 'btn-action btn-yaniv', true, null));
@@ -463,7 +503,7 @@ function closeDobonWindow() {
   if (G.currentPlayer !== humanIdx) {
     setTimeout(() => aiDraw(G.currentPlayer), 400);
   } else {
-    setStatus('カードを1枚引いてください（山札 or 捨て札）');
+    setStatus('山札または捨て札をクリックして1枚引いてください');
   }
 }
 

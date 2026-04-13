@@ -74,6 +74,7 @@ function canSumAll(vals, target) {
 }
 
 // ハイブリッドDOBON判定
+// 手札の全枚数合計（Joker除く）が目標値と一致した場合のみ成立
 export function canHybridDobon(hand, targets) {
   if (!hand || !hand.length || !targets || !targets.length) return false;
 
@@ -82,29 +83,12 @@ export function canHybridDobon(hand, targets) {
 
   for (const target of targets) {
     if (target <= 0) continue;
-
-    // 足し算: 手札全枚数の合計
     if (canSumAll(vals, target)) return true;
-
-    // 異なるランク2枚の演算（-, *, /）
-    const nonJoker = hand.filter(c => c.rank !== 'JK');
-    for (let i = 0; i < nonJoker.length; i++) {
-      for (let j = i + 1; j < nonJoker.length; j++) {
-        if (nonJoker[i].rank === nonJoker[j].rank) continue;
-        const a = hybridCardValue(nonJoker[i]);
-        const b = hybridCardValue(nonJoker[j]);
-        if (a === 0 || b === 0) continue;
-        if (a - b === target || b - a === target) return true;
-        if (a * b === target) return true;
-        if (b !== 0 && Number.isInteger(a / b) && a / b === target) return true;
-        if (a !== 0 && Number.isInteger(b / a) && b / a === target) return true;
-      }
-    }
   }
   return false;
 }
 
-// DOBON成功式を1つ返す（説明表示用）
+// DOBON成功式を返す（説明表示用）
 export function hybridDobonExplanation(hand, targets) {
   if (!hand || !hand.length || !targets || !targets.length) return null;
 
@@ -112,26 +96,8 @@ export function hybridDobonExplanation(hand, targets) {
 
   for (const target of targets) {
     if (target <= 0) continue;
-
-    // 足し算: 全枚数合計
     if (vals.reduce((s, v) => s + v, 0) === target) {
       return `${vals.join('+')}=${target}`;
-    }
-
-    // 異なるランク2枚演算
-    const nonJoker = hand.filter(c => c.rank !== 'JK');
-    for (let i = 0; i < nonJoker.length; i++) {
-      for (let j = i + 1; j < nonJoker.length; j++) {
-        if (nonJoker[i].rank === nonJoker[j].rank) continue;
-        const a = hybridCardValue(nonJoker[i]);
-        const b = hybridCardValue(nonJoker[j]);
-        if (a === 0 || b === 0) continue;
-        if (a - b === target) return `${a}-${b}=${target}`;
-        if (b - a === target) return `${b}-${a}=${target}`;
-        if (a * b === target) return `${a}×${b}=${target}`;
-        if (b !== 0 && Number.isInteger(a / b) && a / b === target) return `${a}÷${b}=${target}`;
-        if (a !== 0 && Number.isInteger(b / a) && b / a === target) return `${b}÷${a}=${target}`;
-      }
     }
   }
   return null;
