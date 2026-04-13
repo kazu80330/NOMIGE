@@ -66,19 +66,11 @@ export function getFieldTargets(fieldCards) {
   return [...targets];
 }
 
-// 部分集合の和がtargetに一致するか（足し算ルール用）
-function canSumTo(vals, target) {
-  const n = vals.length;
-  if (n === 0) return false;
-  if (n > 20) return false; // 安全上限
-  for (let mask = 1; mask < (1 << n); mask++) {
-    let sum = 0;
-    for (let i = 0; i < n; i++) {
-      if ((mask >> i) & 1) sum += vals[i];
-    }
-    if (sum === target) return true;
-  }
-  return false;
+// 足し算ルール: 手札全枚数の合計が目標値と一致するか
+// 「枚数無制限」= 手札を全部使った合計が一致すればOK
+function canSumAll(vals, target) {
+  if (!vals.length) return false;
+  return vals.reduce((s, v) => s + v, 0) === target;
 }
 
 // ハイブリッドDOBON判定
@@ -91,8 +83,8 @@ export function canHybridDobon(hand, targets) {
   for (const target of targets) {
     if (target <= 0) continue;
 
-    // 足し算: 部分集合の和
-    if (canSumTo(vals, target)) return true;
+    // 足し算: 手札全枚数の合計
+    if (canSumAll(vals, target)) return true;
 
     // 異なるランク2枚の演算（-, *, /）
     const nonJoker = hand.filter(c => c.rank !== 'JK');
@@ -121,16 +113,9 @@ export function hybridDobonExplanation(hand, targets) {
   for (const target of targets) {
     if (target <= 0) continue;
 
-    // 足し算
-    const n = vals.length;
-    for (let mask = 1; mask < Math.min(1 << n, 1 << 15); mask++) {
-      const subset = [];
-      for (let i = 0; i < n; i++) {
-        if ((mask >> i) & 1) subset.push(vals[i]);
-      }
-      if (subset.reduce((s, v) => s + v, 0) === target) {
-        return `${subset.join('+')}=${target}`;
-      }
+    // 足し算: 全枚数合計
+    if (vals.reduce((s, v) => s + v, 0) === target) {
+      return `${vals.join('+')}=${target}`;
     }
 
     // 異なるランク2枚演算
