@@ -2,6 +2,8 @@
 
 ![NOMIGE Logo](./public/images/logo.png)
 
+🎮 **[Live Demo](https://kazu80330.github.io/NOMIGE/)** — ブラウザですぐに遊べます！
+
 **NOMIGE (ノミゲ)** は、カジノのような没入感のある「プレミアムなUI」と、戦略性の高いトランプゲーム「ヤニブ (YANIV)」および「ドボン (DOBON)」を楽しめるWebアプリケーションです。
 
 ## ✨ 特徴
