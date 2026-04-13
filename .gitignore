@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Editor/OS Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# AI Assistant & Internal
+.claude/
+.gemini/
+.antigravity/
+implementation_plan.md
+task.md
+walkthrough.md
+
+# Application Data
+old/
+.env
+.env.*
+!.env.example
+
+# Build files
+*.tsbuildinfo
