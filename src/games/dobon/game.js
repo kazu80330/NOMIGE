@@ -12,6 +12,7 @@ import {
   renderScorePanel, renderOpponents, renderCard, renderCardBack,
   setStatus, setActionLog, showOppThinking, showScreen,
 } from '../../ui/renderer.js';
+import { addCardGestures } from '../../ui/gestures.js';
 import { showModal, hideModal, showToast } from '../../ui/modal.js';
 
 // ==================== STATE ====================
@@ -140,6 +141,7 @@ export function startGame() {
   G.currentPlayer = 0;
   G.localTurn = 0;
   G.doubleFactor = 1;
+  window.activeDiscardCard = (idx) => swipeDobonCard(idx);
   G.deck = buildDeck();
   G.discardAll = [];
 
@@ -245,6 +247,7 @@ function renderDobonPlayerHand() {
   p.hand.forEach((card, idx) => {
     const cd = renderCard(card, true, G.selectedCards.includes(idx));
     cd.onclick = () => toggleDobonSelect(idx);
+    addCardGestures(cd, idx, { onSwipeUp: (i) => swipeDobonCard(i) });
     handEl.appendChild(cd);
   });
 
@@ -351,6 +354,14 @@ export function revealHand() {
   G.handRevealed = true;
   document.getElementById('hand-cover').style.display = 'none';
   updateDobonActionBar();
+}
+
+// スワイプ・ドラッグで1枚（または選択中セット）を出す
+function swipeDobonCard(idx) {
+  const humanIdx = getHumanIdx();
+  if (G.currentPlayer !== humanIdx || G.phase !== 'play') return;
+  if (!G.selectedCards.includes(idx)) G.selectedCards = [idx];
+  dobonPlayCards();
 }
 
 // ==================== PLAYER ACTIONS ====================

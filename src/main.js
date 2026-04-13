@@ -1,4 +1,5 @@
 import { showScreen, hideModal } from './ui/renderer.js';
+import { addDropZone } from './ui/gestures.js';
 import * as YanivGame from './games/yaniv/game.js';
 import * as DobonGame from './games/dobon/game.js';
 import * as HybridGame from './games/hybrid/game.js';
@@ -68,3 +69,11 @@ window.hybridDrawDiscard  = () => HybridGame.hybridDrawDiscard();
 // ==================== 初期化 ====================
 showScreen('title-screen');
 YanivGame.updateNameInputs();
+
+// ドロップゾーン: .center-table に1回だけ設定
+// 各ゲームが window.activeDiscardCard をセットして使う
+window.activeDiscardCard = null;
+const _centerTable = document.querySelector('.center-table');
+if (_centerTable) {
+  addDropZone(_centerTable, (idx) => window.activeDiscardCard?.(idx));
+}

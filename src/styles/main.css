@@ -982,3 +982,23 @@ body::before {
   font-size: 15px;
   line-height: 1;
 }
+
+/* ===== DRAG & DROP / SWIPE ===== */
+.card[draggable="true"] {
+  cursor: grab;
+}
+.card[draggable="true"]:active {
+  cursor: grabbing;
+}
+.card-dragging {
+  opacity: 0.4;
+  transform: scale(0.94) translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+}
+/* ドロップゾーン */
+.drop-zone-active {
+  outline: 2px solid var(--gold);
+  outline-offset: 6px;
+  border-radius: 12px;
+  background: rgba(201,168,76,0.05);
+}

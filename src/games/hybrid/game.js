@@ -67,6 +67,7 @@ function renderAll() {
   if (p) {
     renderPlayerHand(p.hand, G.selectedCards, G.mode, p.name, {
       onCardClick: (idx) => hybridToggleSelect(idx),
+      onCardDiscard: (idx) => swipeHybridCard(idx),
     });
   }
   updatePhaseLabel(G.phase === 'play' ? 'exchange' : G.phase);
@@ -270,6 +271,7 @@ export function startGame() {
   G.round = 1;
   G.currentPlayer = 0;
   G.localTurn = 0;
+  window.activeDiscardCard = (idx) => swipeHybridCard(idx);
   initRound();
   showScreen('game-screen');
 }
@@ -392,6 +394,14 @@ export function revealHand() {
   setStatus(`手札合計: ${total}点 — カードを選んで出してください`);
 }
 
+// スワイプ・ドラッグで1枚（または選択中セット）を出す
+function swipeHybridCard(idx) {
+  const humanIdx = getHumanIdx();
+  if (G.currentPlayer !== humanIdx || G.phase !== 'play') return;
+  if (!G.selectedCards.includes(idx)) G.selectedCards = [idx];
+  hybridPlayCards();
+}
+
 // ==================== CARD SELECTION ====================
 
 export function hybridToggleSelect(idx) {
@@ -409,6 +419,7 @@ export function hybridToggleSelect(idx) {
 
   renderPlayerHand(G.players[humanIdx].hand, G.selectedCards, G.mode, G.players[humanIdx].name, {
     onCardClick: (i2) => hybridToggleSelect(i2),
+    onCardDiscard: (i2) => swipeHybridCard(i2),
   });
   updateHybridActionBar();
 

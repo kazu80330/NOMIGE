@@ -76,6 +76,7 @@ function renderAll() {
   if (p) {
     renderPlayerHand(p.hand, G.selectedCards, G.mode, p.name, {
       onCardClick: (idx) => toggleSelect(idx),
+      onCardDiscard: (idx) => swipeDiscardCard(idx),
     });
   }
 
@@ -174,6 +175,7 @@ export function startGame() {
   G.round = 1;
   G.currentPlayer = 0;
   G.localTurn = 0;
+  window.activeDiscardCard = (idx) => swipeDiscardCard(idx);
   initRound();
   showScreen('game-screen');
   if (G.mode !== 'local') {
@@ -303,6 +305,26 @@ export function selectDiscard() {
   updateStatusMsg();
 }
 
+// スワイプ・ドラッグで1枚捨てる
+function swipeDiscardCard(idx) {
+  const humanIdx = getHumanIdx();
+  if (G.currentPlayer !== humanIdx) return;
+  if (G.drawSource === null) {
+    // ドローする前: タップ選択と同じ挙動
+    toggleSelect(idx);
+    return;
+  }
+  // ドロー済み: 選択セットして即座に交換
+  if (!G.selectedCards.includes(idx)) {
+    G.selectedCards = [idx];
+    const p = G.players[humanIdx];
+    const sorted = sortHand(p.hand, G.selectedCards);
+    p.hand = sorted.hand;
+    G.selectedCards = sorted.selectedCards;
+  }
+  confirmExchange();
+}
+
 export function toggleSelect(idx) {
   const humanIdx = getHumanIdx();
   if (G.currentPlayer !== humanIdx) return;
@@ -317,6 +339,7 @@ export function toggleSelect(idx) {
 
   renderPlayerHand(p.hand, G.selectedCards, G.mode, p.name, {
     onCardClick: (i2) => toggleSelect(i2),
+    onCardDiscard: (i2) => swipeDiscardCard(i2),
   });
   _updateActionBar();
   updateStatusMsg();

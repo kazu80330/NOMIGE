@@ -1,5 +1,6 @@
 import { cardColor, handTotal } from '../core/deck.js';
 import { handTotalEffective } from '../games/yaniv/rules.js';
+import { addCardGestures } from './gestures.js';
 
 // ==================== CARD RENDERING ====================
 
@@ -99,6 +100,9 @@ export function renderPlayerHand(hand, selectedCards, mode, playerName, callback
   hand.forEach((card, idx) => {
     const cd = renderCard(card, true, selectedCards.includes(idx));
     if (callbacks.onCardClick) cd.onclick = () => callbacks.onCardClick(idx);
+    if (callbacks.onCardDiscard) {
+      addCardGestures(cd, idx, { onSwipeUp: (i) => callbacks.onCardDiscard(i) });
+    }
     handEl.appendChild(cd);
   });
 
