@@ -7,7 +7,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/nomige.git"
+    "url": "git+https://github.com/kazu80330/NOMIGE.git"
   },
   "keywords": [
     "cardgame",
@@ -19,7 +19,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "vite": "^5.4.0"
